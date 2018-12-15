@@ -11,42 +11,29 @@ const cats = {
 // 激活扩展的时候会调用此方法
 // 由package.json中定义的激活事件控制
 export function activate(context: ExtensionContext) {
-    let currentPanel: WebviewPanel | undefined = undefined;
-    let interval = null;
     context.subscriptions.push(commands.registerCommand("catCoding.start", () => {
-        const columnToShowIn = window.activeTextEditor ? window.activeTextEditor.viewColumn : undefined;
-        if (currentPanel) {
-            currentPanel.reveal(columnToShowIn);
-        } else {
-
-
-            //创建和显示一个web视图
-            currentPanel = window.createWebviewPanel(
-                "catCoding", //视图类型
-                "Cat Coding", //标题
-                ViewColumn.One,
-                {} //选项
-            );
-            let iteration = 0;
-            const updateWebview = () => {
-                const cat = iteration++ % 2 ? "Compiling Cat" : "Coding Cat";
-                currentPanel.title = cat;
-                currentPanel.webview.html = getWebviewContent(cat);
-                console.log("updateWebview...");
-
-            };
-            updateWebview();
-            interval = setInterval(updateWebview, 5000);
-            // const timeout = setTimeout(() => panel.dispose(), 5000);
-        }
-        currentPanel.onDidDispose(() => {
-            // clearTimeout(timeout);
-            clearInterval(interval);
-            currentPanel = undefined;
+        const panel = window.createWebviewPanel('catCoding', 'Cat Coding', ViewColumn.One, {});
+        panel.webview.html = getWebviewContent(cats['Coding Cat']);
+        panel.onDidChangeViewState(e => {
+            const panel = e.webviewPanel;
+            switch (panel.viewColumn) {
+                case ViewColumn.One:
+                    updateWebviewForCat(panel, 'Coding Cat');
+                    return;
+                case ViewColumn.Two:
+                    updateWebviewForCat(panel, "Compiling Cat");
+                    return;
+                case ViewColumn.Three:
+                    updateWebviewForCat(panel, "Testing Cat");
+                    return;
+            }
         }, null, context.subscriptions);
     }));
-
-    function getWebviewContent(cat: keyof typeof cats) {
+    function updateWebviewForCat(panel: WebviewPanel, catName: keyof typeof cats) {
+        panel.title = catName;
+        panel.webview.html = getWebviewContent(cats[catName]);
+    }
+    function getWebviewContent(cat: string) {
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,7 +42,7 @@ export function activate(context: ExtensionContext) {
     <title>Cat Coding</title>
 </head>
 <body>
-    <img src="${cats[cat]}" width="300" />
+    <img src="${cat}" width="300" />
 </body>
 </html>`;
     }
