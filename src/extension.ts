@@ -27,6 +27,13 @@ export function activate(context: ExtensionContext) {
             const onDiskPath = Uri.file(path.join(context.extensionPath, 'media', 'giphy.webp'));
             const catGifSrc = onDiskPath.with({ scheme: 'vscode-resource' });
             currentPanel.webview.html = getWebviewContent(catGifSrc);
+            currentPanel.webview.onDidReceiveMessage(message => {
+                switch (message.command) {
+                    case 'alert':
+                        window.showErrorMessage(message.text);
+                        return;
+                }
+            }, undefined, context.subscriptions);
             currentPanel.onDidDispose(() => { currentPanel = undefined; }, undefined, context.subscriptions);
         }
     }));
@@ -53,11 +60,18 @@ export function activate(context: ExtensionContext) {
     <img src="${cat}" width="300" />
     <h1 id="lines-of-code-counter">0</h1>
     <script>
+        const vscode = acquireVsCodeApi();
         const counter = document.getElementById('lines-of-code-counter');
 
         let count = 0;
         setInterval(()=>{
             counter.textContent = count++;
+            if(Math.random()<0.001*count){
+                vscode.postMessage({
+                    command:'alert',
+                    text:'🐛  on line ' + count
+                });
+            }
         },100);
         window.addEventListener('message',event=>{
             const message = event.data;
