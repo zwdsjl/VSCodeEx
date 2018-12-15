@@ -63,9 +63,13 @@ export function activate(context: ExtensionContext) {
         const vscode = acquireVsCodeApi();
         const counter = document.getElementById('lines-of-code-counter');
 
-        let count = 0;
+        const previousState = vscode.getState();
+        let count = previousState ? previousState.count : 0;
+        counter.textContent = count;
+
         setInterval(()=>{
             counter.textContent = count++;
+            vscode.setState({count});
             if(Math.random()<0.001*count){
                 vscode.postMessage({
                     command:'alert',
