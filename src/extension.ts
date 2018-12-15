@@ -11,17 +11,30 @@ const cats = {
 // 激活扩展的时候会调用此方法
 // 由package.json中定义的激活事件控制
 export function activate(context: ExtensionContext) {
+    // 只创建一个视图
+    let currentPanel: WebviewPanel | undefined = undefined;
+
     context.subscriptions.push(commands.registerCommand("catCoding.start", () => {
-        const panel = window.createWebviewPanel('catCoding', 'Cat Coding', ViewColumn.One, {
-            // 只允许webview访问扩展的媒体目录中的资源
-            localResourceRoots: [
-                Uri.file(path.join(context.extensionPath, 'media'))
-            ],
-            enableScripts: true
-        });
-        const onDiskPath = Uri.file(path.join(context.extensionPath, 'media', 'giphy.webp'));
-        const catGifSrc = onDiskPath.with({ scheme: 'vscode-resource' });
-        panel.webview.html = getWebviewContent(catGifSrc);
+        if (currentPanel) {
+            currentPanel.reveal(ViewColumn.One);
+        } else {
+            currentPanel = window.createWebviewPanel('catCoding', 'Cat Coding', ViewColumn.One, {
+                enableScripts: true,
+                localResourceRoots: [
+                    Uri.file(path.join(context.extensionPath,'media'))
+                ]
+            });
+            const onDiskPath = Uri.file(path.join(context.extensionPath, 'media', 'giphy.webp'));
+            const catGifSrc = onDiskPath.with({ scheme: 'vscode-resource' });
+            currentPanel.webview.html = getWebviewContent(catGifSrc);
+            currentPanel.onDidDispose(() => { currentPanel = undefined; }, undefined, context.subscriptions);
+        }
+    }));
+    context.subscriptions.push(commands.registerCommand('catCoding.doRefactor', () => { 
+        if (!currentPanel) {
+            return;
+        }
+        currentPanel.webview.postMessage({ command: 'refactor' });
     }));
     function getWebviewContent(cat: Uri) {
         return `<!DOCTYPE html>
@@ -46,6 +59,17 @@ export function activate(context: ExtensionContext) {
         setInterval(()=>{
             counter.textContent = count++;
         },100);
+        window.addEventListener('message',event=>{
+            const message = event.data;
+            switch (message.command) {
+                case 'refactor':
+                    count = Math.ceil(count * 0.5);
+                    counter.textContent = count;
+                    break;
+                default:
+                    break;
+            }
+        });
     </script>
 </body>
 </html>`;
