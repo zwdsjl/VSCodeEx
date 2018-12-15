@@ -1,36 +1,153 @@
 'use strict';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import { window, commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, ViewColumn, WebviewPanel } from 'vscode';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+const cats = {
+    'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
+    'Compiling Cat': 'https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif',
+    'Testing Cat': 'https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif'
+};
+// 激活扩展的时候会调用此方法
+// 由package.json中定义的激活事件控制
+export function activate(context: ExtensionContext) {
+    let currentPanel: WebviewPanel | undefined = undefined;
+    let interval = null;
+    context.subscriptions.push(commands.registerCommand("catCoding.start", () => {
+        const columnToShowIn = window.activeTextEditor ? window.activeTextEditor.viewColumn : undefined;
+        if (currentPanel) {
+            currentPanel.reveal(columnToShowIn);
+        } else {
 
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
+
+            //创建和显示一个web视图
+            currentPanel = window.createWebviewPanel(
+                "catCoding", //视图类型
+                "Cat Coding", //标题
+                ViewColumn.One,
+                {} //选项
+            );
+            let iteration = 0;
+            const updateWebview = () => {
+                const cat = iteration++ % 2 ? "Compiling Cat" : "Coding Cat";
+                currentPanel.title = cat;
+                currentPanel.webview.html = getWebviewContent(cat);
+                console.log("updateWebview...");
+
+            };
+            updateWebview();
+            interval = setInterval(updateWebview, 5000);
+            // const timeout = setTimeout(() => panel.dispose(), 5000);
+        }
+        currentPanel.onDidDispose(() => {
+            // clearTimeout(timeout);
+            clearInterval(interval);
+            currentPanel = undefined;
+        }, null, context.subscriptions);
+    }));
+
+    function getWebviewContent(cat: keyof typeof cats) {
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Coding</title>
+</head>
+<body>
+    <img src="${cats[cat]}" width="300" />
+</body>
+</html>`;
+    }
+    // 使用控制台输出诊断信息(console.log)和错误(console.error)。
+    // 这行代码只会在您的扩展被激活时执行一次。
     console.log('Congratulations, your extension "vscodeex" is now active!');
 
+    //创建一个新字符计数器
+    let wordCounter = new WordCounter();
+    let controller = new WordCounterController(wordCounter);
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
+    /*let disposable = commands.registerCommand('extension.sayHello', () => {
         // The code you place here will be executed every time your command is executed
-        let editor = vscode.window.activeTextEditor;
+        wordCounter.updateWordCount();
+        // Display a message box to the user
+    });*/
+
+    //添加到禁用此扩展时已处理的可处理函数列表中。
+    context.subscriptions.push(controller);
+    context.subscriptions.push(wordCounter);
+}
+
+class WordCounter {
+    private _statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
+
+    public updateWordCount() {
+        //获得当前文档编辑器
+        let editor = window.activeTextEditor;
         if (!editor) {
+            this._statusBarItem.hide();
             return;
         }
 
-        let selection = editor.selection;
-        let text = editor.document.getText(selection);
-        
-        // Display a message box to the user
-        vscode.window.showInformationMessage("你选中的字符长度: " + text.length);
-    });
+        let doc = editor.document;
 
-    context.subscriptions.push(disposable);
+        //只有在ts文件的情况下更新
+        if (doc.languageId === "typescript") {
+            let wordCount = this._getWordCount(doc);
+
+            //更新状态栏
+            this._statusBarItem.text = wordCount !== 1 ? `$(pencil) ${wordCount} 空格` : '1 空格';
+            this._statusBarItem.show();
+        } else {
+            this._statusBarItem.hide();
+        }
+    }
+
+    public _getWordCount(doc: TextDocument): number {
+
+        let docContent = doc.getText();
+
+        //解析出不需要的空格
+        docContent = docContent.replace(/(< ([^>]+)<)/g, '').replace(/\s+/g, ' ');
+        docContent = docContent.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+        let wordCount = 0;
+        if (docContent !== "") {
+            wordCount = docContent.split(" ").length;
+        }
+        return wordCount;
+    }
+
+    dispose() {
+        this._statusBarItem.dispose();
+    }
 }
 
-// this method is called when your extension is deactivated
-export function deactivate() {
+class WordCounterController {
+    private _wordCounter: WordCounter;
+    private _disposable: Disposable;
+
+    constructor(wordCounter: WordCounter) {
+        this._wordCounter = wordCounter;
+
+        //订阅选择更改和编辑器激活事件
+        let subscriptions: Disposable[] = [];
+        window.onDidChangeTextEditorSelection(this._onEvent, this, subscriptions);
+        window.onDidChangeActiveTextEditor(this._onEvent, this, subscriptions);
+
+        //为当前文档更新计数器
+        this._wordCounter.updateWordCount();
+
+        //清理订阅事件
+        this._disposable = Disposable.from(...subscriptions);
+    }
+
+    dispose() {
+        this._disposable.dispose();
+    }
+
+    private _onEvent() {
+        this._wordCounter.updateWordCount();
+    }
 }
