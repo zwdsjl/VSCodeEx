@@ -1,8 +1,8 @@
 'use strict';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, ViewColumn, WebviewPanel, window } from 'vscode';
-
+import { commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, ViewColumn, WebviewPanel, window, Uri } from 'vscode';
+import * as path from 'path';
 const cats = {
     'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
     'Compiling Cat': 'https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif',
@@ -13,27 +13,11 @@ const cats = {
 export function activate(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand("catCoding.start", () => {
         const panel = window.createWebviewPanel('catCoding', 'Cat Coding', ViewColumn.One, {});
-        panel.webview.html = getWebviewContent(cats['Coding Cat']);
-        panel.onDidChangeViewState(e => {
-            const panel = e.webviewPanel;
-            switch (panel.viewColumn) {
-                case ViewColumn.One:
-                    updateWebviewForCat(panel, 'Coding Cat');
-                    return;
-                case ViewColumn.Two:
-                    updateWebviewForCat(panel, "Compiling Cat");
-                    return;
-                case ViewColumn.Three:
-                    updateWebviewForCat(panel, "Testing Cat");
-                    return;
-            }
-        }, null, context.subscriptions);
+        const onDiskPath = Uri.file(path.join(context.extensionPath, 'media', 'giphy.webp'));
+        const catGifSrc = onDiskPath.with({ scheme: 'vscode-resource' });
+        panel.webview.html = getWebviewContent(catGifSrc);
     }));
-    function updateWebviewForCat(panel: WebviewPanel, catName: keyof typeof cats) {
-        panel.title = catName;
-        panel.webview.html = getWebviewContent(cats[catName]);
-    }
-    function getWebviewContent(cat: string) {
+    function getWebviewContent(cat: Uri) {
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
