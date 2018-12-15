@@ -12,7 +12,13 @@ const cats = {
 // 由package.json中定义的激活事件控制
 export function activate(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand("catCoding.start", () => {
-        const panel = window.createWebviewPanel('catCoding', 'Cat Coding', ViewColumn.One, {});
+        const panel = window.createWebviewPanel('catCoding', 'Cat Coding', ViewColumn.One, {
+            // 只允许webview访问扩展的媒体目录中的资源
+            localResourceRoots: [
+                Uri.file(path.join(context.extensionPath, 'media'))
+            ],
+            enableScripts: true
+        });
         const onDiskPath = Uri.file(path.join(context.extensionPath, 'media', 'giphy.webp'));
         const catGifSrc = onDiskPath.with({ scheme: 'vscode-resource' });
         panel.webview.html = getWebviewContent(catGifSrc);
@@ -24,9 +30,23 @@ export function activate(context: ExtensionContext) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cat Coding</title>
+    <style>
+        body.vscode-dark {
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <img src="${cat}" width="300" />
+    <h1 id="lines-of-code-counter">0</h1>
+    <script>
+        const counter = document.getElementById('lines-of-code-counter');
+
+        let count = 0;
+        setInterval(()=>{
+            counter.textContent = count++;
+        },100);
+    </script>
 </body>
 </html>`;
     }
