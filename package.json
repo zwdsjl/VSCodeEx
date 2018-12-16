@@ -12,7 +12,8 @@
     ],
     "activationEvents": [
         "onLanguage:plaintext",
-        "onCommand:catCoding.start"
+        "onCommand:catCoding.start",
+        "onWebviewPanel:catCoding"
     ],
     "main": "./out/extension",
     "contributes": {

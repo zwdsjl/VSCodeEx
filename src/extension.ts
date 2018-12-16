@@ -1,7 +1,7 @@
 'use strict';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, ViewColumn, WebviewPanel, window, Uri } from 'vscode';
+import { commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, ViewColumn, WebviewPanel, window, Uri, WebviewPanelSerializer, extensions } from 'vscode';
 import * as path from 'path';
 const cats = {
     'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
@@ -43,8 +43,47 @@ export function activate(context: ExtensionContext) {
         }
         currentPanel.webview.postMessage({ command: 'refactor' });
     }));
-    function getWebviewContent(cat: Uri) {
-        return `<!DOCTYPE html>
+    window.registerWebviewPanelSerializer('catCoding', new CatCodingSerializer(context));
+    
+    // 使用控制台输出诊断信息(console.log)和错误(console.error)。
+    // 这行代码只会在您的扩展被激活时执行一次。
+    console.log('Congratulations, your extension "vscodeex" is now active!');
+
+    //创建一个新字符计数器
+    let wordCounter = new WordCounter();
+    let controller = new WordCounterController(wordCounter);
+    // The command has been defined in the package.json file
+    // Now provide the implementation of the command with  registerCommand
+    // The commandId parameter must match the command field in package.json
+    /*let disposable = commands.registerCommand('extension.sayHello', () => {
+        // The code you place here will be executed every time your command is executed
+        wordCounter.updateWordCount();
+        // Display a message box to the user
+    });*/
+
+    //添加到禁用此扩展时已处理的可处理函数列表中。
+    context.subscriptions.push(controller);
+    context.subscriptions.push(wordCounter);
+}
+
+class CatCodingSerializer implements WebviewPanelSerializer{
+    private  catGifSrc:Uri = null;
+    /**
+     *
+     */
+    constructor(context:ExtensionContext)  {
+        const onDiskPath = Uri.file(path.join(context.extensionPath,'media', 'giphy.webp'));
+        this.catGifSrc = onDiskPath.with({ scheme: 'vscode-resource' });
+    }
+    async deserializeWebviewPanel(webviewPanel: WebviewPanel, state: any) {
+        console.log(`Got state ${state}`);
+        
+        webviewPanel.webview.html = getWebviewContent(this.catGifSrc);
+    }
+
+}
+function getWebviewContent(cat: Uri) {
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -91,28 +130,7 @@ export function activate(context: ExtensionContext) {
     </script>
 </body>
 </html>`;
-    }
-    // 使用控制台输出诊断信息(console.log)和错误(console.error)。
-    // 这行代码只会在您的扩展被激活时执行一次。
-    console.log('Congratulations, your extension "vscodeex" is now active!');
-
-    //创建一个新字符计数器
-    let wordCounter = new WordCounter();
-    let controller = new WordCounterController(wordCounter);
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    /*let disposable = commands.registerCommand('extension.sayHello', () => {
-        // The code you place here will be executed every time your command is executed
-        wordCounter.updateWordCount();
-        // Display a message box to the user
-    });*/
-
-    //添加到禁用此扩展时已处理的可处理函数列表中。
-    context.subscriptions.push(controller);
-    context.subscriptions.push(wordCounter);
 }
-
 class WordCounter {
     private _statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
 
