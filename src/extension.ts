@@ -21,8 +21,9 @@ export function activate(context: ExtensionContext) {
             currentPanel = window.createWebviewPanel('catCoding', 'Cat Coding', ViewColumn.One, {
                 enableScripts: true,
                 localResourceRoots: [
-                    Uri.file(path.join(context.extensionPath,'media'))
-                ]
+                    Uri.file(path.join(context.extensionPath, 'media'))
+                ],
+                retainContextWhenHidden: true
             });
             const onDiskPath = Uri.file(path.join(context.extensionPath, 'media', 'giphy.webp'));
             const catGifSrc = onDiskPath.with({ scheme: 'vscode-resource' });
@@ -37,14 +38,14 @@ export function activate(context: ExtensionContext) {
             currentPanel.onDidDispose(() => { currentPanel = undefined; }, undefined, context.subscriptions);
         }
     }));
-    context.subscriptions.push(commands.registerCommand('catCoding.doRefactor', () => { 
+    context.subscriptions.push(commands.registerCommand('catCoding.doRefactor', () => {
         if (!currentPanel) {
             return;
         }
         currentPanel.webview.postMessage({ command: 'refactor' });
     }));
     window.registerWebviewPanelSerializer('catCoding', new CatCodingSerializer(context));
-    
+
     // 使用控制台输出诊断信息(console.log)和错误(console.error)。
     // 这行代码只会在您的扩展被激活时执行一次。
     console.log('Congratulations, your extension "vscodeex" is now active!');
@@ -66,18 +67,18 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(wordCounter);
 }
 
-class CatCodingSerializer implements WebviewPanelSerializer{
-    private  catGifSrc:Uri = null;
+class CatCodingSerializer implements WebviewPanelSerializer {
+    private catGifSrc: Uri = null;
     /**
      *
      */
-    constructor(context:ExtensionContext)  {
-        const onDiskPath = Uri.file(path.join(context.extensionPath,'media', 'giphy.webp'));
+    constructor(context: ExtensionContext) {
+        const onDiskPath = Uri.file(path.join(context.extensionPath, 'media', 'giphy.webp'));
         this.catGifSrc = onDiskPath.with({ scheme: 'vscode-resource' });
     }
     async deserializeWebviewPanel(webviewPanel: WebviewPanel, state: any) {
         console.log(`Got state ${state}`);
-        
+
         webviewPanel.webview.html = getWebviewContent(this.catGifSrc);
     }
 
