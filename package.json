@@ -17,7 +17,7 @@
     ],
     "main": "./out/extension",
     "contributes": {
-        "commands":[
+        "commands": [
             {
                 "command": "catCoding.start",
                 "title": "Start new cat doding session",
@@ -27,6 +27,17 @@
                 "command": "catCoding.doRefactor",
                 "title": "doRefactor",
                 "category": "Cat Coding"
+            },
+            {
+                "command": "extension.textFunctions",
+                "title": "Text Functions",
+                "description": "Text functions on selections"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "extension.textFunctions",
+                "key": "Alt+T"
             }
         ]
     },
@@ -44,20 +55,22 @@
         "@types/node": "^8.10.25",
         "@types/mocha": "^2.2.42"
     },
-    "configuration":{
-        "type":"object",
-        "title":"Example configuration",
-        "properties":{
-            "languageServerExample.maxNumberOfProblems":{
-                "scope":"resource",
-                "type":"number",
-                "default":100,
-                "description":"Controls the maxinum number of problems produced by the server."
+    "configuration": {
+        "type": "object",
+        "title": "Example configuration",
+        "properties": {
+            "languageServerExample.maxNumberOfProblems": {
+                "scope": "resource",
+                "type": "number",
+                "default": 100,
+                "description": "Controls the maxinum number of problems produced by the server."
             }
         }
     },
     "dependencies": {
-        "vscode":"^1.1.26",
-        "vscode-languageclient":"^4.14"
+        "vscode": "^1.1.26",
+        "vscode-languageclient": "^4.1.4",
+        "underscore.string": "^3.2.2",
+        "figlet": "^1.1.1"
     }
 }

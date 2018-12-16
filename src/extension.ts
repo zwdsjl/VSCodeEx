@@ -3,6 +3,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as path from 'path';
 import { commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, Uri, ViewColumn, WebviewPanel, WebviewPanelSerializer, window } from 'vscode';
+import { textFunctions } from './textTools';
 const cats = {
     'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
     'Compiling Cat': 'https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif',
@@ -44,6 +45,7 @@ export function activate(context: ExtensionContext) {
         }
         currentPanel.webview.postMessage({ command: 'refactor' });
     }));
+    context.subscriptions.push(commands.registerCommand('extension.textFunctions', textFunctions));
     window.registerWebviewPanelSerializer('catCoding', new CatCodingSerializer(context));
 
     // 使用控制台输出诊断信息(console.log)和错误(console.error)。
