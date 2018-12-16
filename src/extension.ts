@@ -1,8 +1,8 @@
 'use strict';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, ViewColumn, WebviewPanel, window, Uri, WebviewPanelSerializer, extensions } from 'vscode';
 import * as path from 'path';
+import { commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, Uri, ViewColumn, WebviewPanel, WebviewPanelSerializer, window } from 'vscode';
 const cats = {
     'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
     'Compiling Cat': 'https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif',
