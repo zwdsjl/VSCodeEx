@@ -13,10 +13,44 @@
     "activationEvents": [
         "onLanguage:plaintext",
         "onCommand:catCoding.start",
-        "onWebviewPanel:catCoding"
+        "onWebviewPanel:catCoding",
+        "onView:nodeDependencies",
+        "onView:ftpExplorer",
+		"onView:jsonOutline",
+		"onView:fileExplorer"
     ],
     "main": "./out/extension",
     "contributes": {
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "package-explorer",
+                    "title": "Package管理器",
+                    "icon": "media/dep.svg"
+                }
+            ]
+        },
+        "views": {
+            "package-explorer": [
+                {
+                    "id": "nodeDependencies",
+                    "name": "Node依赖"
+                },
+                {
+                    "id": "jsonOutline",
+                    "name": "Json Outline",
+                    "when": "jsonOutlineEnabled"
+                },
+                {
+                    "id": "fileExplorer",
+                    "name": "File Explorer"
+                },
+                {
+                    "id": "ftpExplorer",
+                    "name": "FTP Explorer"
+                }
+            ]
+        },
         "commands": [
             {
                 "command": "catCoding.start",
@@ -31,7 +65,83 @@
             {
                 "command": "extension.textFunctions",
                 "title": "Text Functions",
-                "description": "Text functions on selections"
+                "description": "Text functions on selections",
+                "icon": {
+                    "light": "media/light.svg",
+                    "dark": "media/light.svg"
+                }
+            },
+            {
+                "command": "nodeDependencies.refreshEntry",
+                "title": "Refresh",
+                "icon": {
+                    "light": "resources/light/refresh.svg",
+                    "dark": "resources/dark/refresh.svg"
+                }
+            },
+            {
+                "command": "nodeDependencies.addEntry",
+                "title": "Add"
+            },
+            {
+                "command": "nodeDependencies.editEntry",
+                "title": "Edit",
+                "icon": {
+                    "light": "resources/light/edit.svg",
+                    "dark": "resources/dark/edit.svg"
+                }
+            },
+            {
+                "command": "nodeDependencies.deleteEntry",
+                "title": "Delete"
+            },
+            {
+                "command": "jsonOutline.refresh",
+                "title": "Refresh",
+                "icon": {
+                    "light": "resources/light/refresh.svg",
+                    "dark": "resources/dark/refresh.svg"
+                }
+            },
+            {
+                "command": "jsonOutline.refreshNode",
+                "title": "Refresh",
+                "icon": {
+                    "light": "resources/light/refresh.svg",
+                    "dark": "resources/dark/refresh.svg"
+                }
+            },
+            {
+                "command": "jsonOutline.renameNode",
+                "title": "Rename"
+            },
+            {
+                "command": "ftpExplorer.refresh",
+                "title": "Refresh",
+                "icon": {
+                    "light": "resources/light/refresh.svg",
+                    "dark": "resources/dark/refresh.svg"
+                }
+            },
+            {
+                "command": "ftpExplorer.openFtpResource",
+                "title": "Open FTP Resource"
+            },
+            {
+                "command": "ftpExplorer.revealResource",
+                "title": "Reveal in FTP View"
+            },
+            {
+                "command": "fileExplorer.refreshFile",
+                "title": "Refresh",
+                "icon": {
+                    "light": "resources/light/refresh.svg",
+                    "dark": "resources/dark/refresh.svg"
+                }
+            },
+            {
+                "command": "fileExplorer.openFile",
+                "title": "Open File"
             }
         ],
         "keybindings": [
@@ -39,7 +149,77 @@
                 "command": "extension.textFunctions",
                 "key": "Alt+T"
             }
-        ]
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "extension.textFunctions",
+                    "when": "editorHasSelection"
+                }
+            ],
+            "editor/title": [
+                {
+                    "when": "editorHasSelection",
+                    "command": "extension.textFunctions",
+                    "alt": "extension.textFunctions",
+                    "group": "navigation"
+                }
+            ],
+            "editor/context": [
+                {
+                    "when": "editorHasSelection",
+                    "command": "extension.textFunctions",
+                    "alt": "extension.textFunctions",
+                    "group": "7_modification"
+                }
+            ],
+            "view/title": [
+                {
+                    "command": "nodeDependencies.refreshEntry",
+                    "when": "view == nodeDependencies",
+                    "group": "navigation"
+                },
+                {
+                    "command": "nodeDependencies.addEntry",
+                    "when": "view == nodeDependencies"
+                },
+                {
+                    "command": "jsonOutline.refresh",
+                    "when": "view == jsonOutline",
+                    "group": "navigation"
+                },
+                {
+                    "command": "ftpExplorer.refresh",
+                    "when": "view == ftpExplorer",
+                    "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "nodeDependencies.editEntry",
+                    "when": "view == nodeDependencies && viewItem == dependency",
+                    "group": "inline"
+                },
+                {
+                    "command": "nodeDependencies.deleteEntry",
+                    "when": "view == nodeDependencies && viewItem == dependency"
+                },
+                {
+                    "command": "jsonOutline.renameNode",
+                    "when": "view == jsonOutline"
+                },
+                {
+                    "command": "jsonOutline.refreshNode",
+                    "when": "view == jsonOutline",
+                    "group": "inline"
+                },
+                {
+                    "command": "fileExplorer.refreshFile",
+                    "when": "view == fileExplorer && viewItem == file",
+                    "group": "inline"
+                }
+            ]
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
@@ -71,6 +251,10 @@
         "vscode": "^1.1.26",
         "vscode-languageclient": "^4.1.4",
         "underscore.string": "^3.2.2",
-        "figlet": "^1.1.1"
+        "figlet": "^1.1.1",
+        "ftp": "^0.3.10",
+        "mkdirp": "^0.5.1",
+        "rimraf": "^2.6.2",
+        "jsonc-parser": "^0.4.2"
     }
 }

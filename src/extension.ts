@@ -2,7 +2,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as path from 'path';
-import { commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, Uri, ViewColumn, WebviewPanel, WebviewPanelSerializer, window } from 'vscode';
+import { commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, Uri, ViewColumn, WebviewPanel, WebviewPanelSerializer, window, workspace } from 'vscode';
+import { DepNodeProvider, Dependency } from './nodeDependencies';
+import { JsonOutlineProvider } from './jsonOutline';
+import { FtpExplorer } from './ftpExplorer';
+import { FileExplorer } from './fileExplorer';
 import { textFunctions } from './textTools';
 const cats = {
     'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
@@ -12,6 +16,27 @@ const cats = {
 // 激活扩展的时候会调用此方法
 // 由package.json中定义的激活事件控制
 export function activate(context: ExtensionContext) {
+
+    // 注册依赖包管理器
+    const nodeDependenciesProvider = new DepNodeProvider(workspace.rootPath);
+    window.registerTreeDataProvider('nodeDependencies', nodeDependenciesProvider);
+    commands.registerCommand('nodeDependencies.refreshEntry', () => nodeDependenciesProvider.refresh());
+    commands.registerCommand('extension.openPackageOnNpm', moduleName => commands.executeCommand('vscode.open', Uri.parse(`https://www.npmjs.com/package/${moduleName}`)));
+    commands.registerCommand('nodeDependencies.addEntry', () => window.showInformationMessage(`Successfully called add entry.`));
+    commands.registerCommand('nodeDependencies.editEntry', (node: Dependency) => window.showInformationMessage(`Successfully called edit entry on ${node.label}.`));
+    commands.registerCommand('nodeDependencies.deleteEntry', (node: Dependency) => window.showInformationMessage(`Successfully called delete entry on ${node.label}.`));
+    
+    const jsonOutlineProvider = new JsonOutlineProvider(context);
+	window.registerTreeDataProvider('jsonOutline', jsonOutlineProvider);
+	commands.registerCommand('jsonOutline.refresh', () => jsonOutlineProvider.refresh());
+	commands.registerCommand('jsonOutline.refreshNode', offset => jsonOutlineProvider.refresh(offset));
+	commands.registerCommand('jsonOutline.renameNode', offset => jsonOutlineProvider.rename(offset));
+    commands.registerCommand('extension.openJsonSelection', range => jsonOutlineProvider.select(range));
+    
+    	// Samples of `window.createView`
+	new FtpExplorer(context);
+	new FileExplorer(context);
+    
     // 只创建一个视图
     let currentPanel: WebviewPanel | undefined = undefined;
 
