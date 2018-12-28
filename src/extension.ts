@@ -2,7 +2,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as path from 'path';
-import { commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, Uri, ViewColumn, WebviewPanel, WebviewPanelSerializer, window, workspace } from 'vscode';
+import { ProgressLocation,CancellationToken,Progress,ProgressOptions,MessageOptions,commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, Uri, ViewColumn, WebviewPanel, WebviewPanelSerializer, window, workspace, languages, Hover, CodeAction, Command, CodeLens, scm, tasks } from 'vscode';
 import { DepNodeProvider, Dependency } from './nodeDependencies';
 import { JsonOutlineProvider } from './jsonOutline';
 import { FtpExplorer } from './ftpExplorer';
@@ -17,6 +17,59 @@ const cats = {
 // 由package.json中定义的激活事件控制
 export function activate(context: ExtensionContext) {
 
+    console.log(tasks.taskExecutions);
+    
+    // 注册一个悬停提供程函数
+    // languages.registerHoverProvider('typescript',{
+    //     provideHover(document,position,token){
+    //         return new Hover('I am a hover');
+    //     }
+    // });
+    // languages.registerCodeActionsProvider({language:'typescript'},{
+    //     provideCodeActions(document,range,context,token):Thenable<CodeAction[]>{
+    //         console.log(context);
+            
+    //         return null;
+    //     }
+    // });
+    
+    /* // 注册一个CodeLens
+    // 在编辑器中代码附近显示可执行命令的标记
+    languages.registerCodeLensProvider({scheme:'file',language:'typescript'},{
+        provideCodeLenses(document,token):Thenable<CodeLens[]>{
+            let position = document.positionAt(1);
+            let range = document.getWordRangeAtPosition(position);
+            console.log(document.getText(range));
+            let codeLens = new CodeLens(range,{command:'HelloWorld',title:'test codelens'})
+            return Promise.resolve([codeLens]);
+        }
+    }); */
+    commands.registerCommand('HelloWorld',()=>{
+        
+        // var  progress:ProgressOptions = {
+        //     cancellable:true,
+        //     location:ProgressLocation.Notification,
+        //     title:"testProgress"
+        // };
+        // window.withProgress(progress,(progress:Progress<{message:string,increment:number}>,token: CancellationToken):Thenable<{}>=>{
+        //     return new Promise((resolve, reject)=>{
+        //         progress.report({message:"ttttt",increment:10});
+        //         setTimeout(function(){
+        //             resolve({test:1});
+        //         },5000)
+        //     });
+        // }).then(function(d){
+        //     console.log(d);
+        // });
+        
+        // let doc = window.activeTextEditor.document;
+        // window.showTextDocument(doc,2,true);
+        window.showInformationMessage("Hello World!",new MessageOption(),'button1','button2').then(function(data){
+            console.log(data);
+            
+        });
+        //commands.executeCommand('catCoding.start');
+    });
     // 注册依赖包管理器
     const nodeDependenciesProvider = new DepNodeProvider(workspace.rootPath);
     window.registerTreeDataProvider('nodeDependencies', nodeDependenciesProvider);
@@ -93,7 +146,15 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(controller);
     context.subscriptions.push(wordCounter);
 }
-
+// showInformationMessage 的参数类
+// 默认为false非模拟弹窗
+// 参数类型:boolean
+class MessageOption implements MessageOptions{
+    modal:boolean = false;
+    constructor(modal?:boolean){
+        this.modal = modal;
+    }
+}
 class CatCodingSerializer implements WebviewPanelSerializer {
     private catGifSrc: Uri = null;
     /**
