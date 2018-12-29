@@ -2,11 +2,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as path from 'path';
-import { ProgressLocation,CancellationToken,Progress,ProgressOptions,MessageOptions,commands, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, Uri, ViewColumn, WebviewPanel, WebviewPanelSerializer, window, workspace, languages, Hover, CodeAction, Command, CodeLens, scm, tasks } from 'vscode';
-import { DepNodeProvider, Dependency } from './nodeDependencies';
-import { JsonOutlineProvider } from './jsonOutline';
-import { FtpExplorer } from './ftpExplorer';
+import { commands, Disposable, ExtensionContext, MessageOptions, StatusBarAlignment, StatusBarItem, tasks, TextDocument, Uri, ViewColumn, WebviewPanel, WebviewPanelSerializer, window, workspace } from 'vscode';
 import { FileExplorer } from './fileExplorer';
+import { FtpExplorer } from './ftpExplorer';
+import { JsonOutlineProvider } from './jsonOutline';
+import { Dependency, DepNodeProvider } from './nodeDependencies';
 import { textFunctions } from './textTools';
 const cats = {
     'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
@@ -17,8 +17,9 @@ const cats = {
 // 由package.json中定义的激活事件控制
 export function activate(context: ExtensionContext) {
 
-    console.log(tasks.taskExecutions);
-    
+    // commands.executeCommand('workbench.action.tasks.runTask');
+
+
     // 注册一个悬停提供程函数
     // languages.registerHoverProvider('typescript',{
     //     provideHover(document,position,token){
@@ -28,11 +29,11 @@ export function activate(context: ExtensionContext) {
     // languages.registerCodeActionsProvider({language:'typescript'},{
     //     provideCodeActions(document,range,context,token):Thenable<CodeAction[]>{
     //         console.log(context);
-            
+
     //         return null;
     //     }
     // });
-    
+
     /* // 注册一个CodeLens
     // 在编辑器中代码附近显示可执行命令的标记
     languages.registerCodeLensProvider({scheme:'file',language:'typescript'},{
@@ -44,8 +45,25 @@ export function activate(context: ExtensionContext) {
             return Promise.resolve([codeLens]);
         }
     }); */
-    commands.registerCommand('HelloWorld',()=>{
-        
+    commands.registerCommand('HelloWorld', () => {
+        commands.getCommands().then((value) => {
+            console.log(value);
+            value.forEach((v, i) => {
+                if (v.indexOf('task') > 0) {
+                    console.log(v);
+                }
+            });
+            return Promise.resolve({});
+        });
+
+        tasks.fetchTasks().then((values) => {
+            console.log(values);
+            let names = Array.from(values, (v, k) => {
+                return v.name;
+            });
+            console.log(names);
+            window.showQuickPick(names, { canPickMany: false })
+        });
         // var  progress:ProgressOptions = {
         //     cancellable:true,
         //     location:ProgressLocation.Notification,
@@ -61,13 +79,13 @@ export function activate(context: ExtensionContext) {
         // }).then(function(d){
         //     console.log(d);
         // });
-        
+
         // let doc = window.activeTextEditor.document;
         // window.showTextDocument(doc,2,true);
-        window.showInformationMessage("Hello World!",new MessageOption(),'button1','button2').then(function(data){
-            console.log(data);
-            
-        });
+        // window.showInformationMessage("Hello World!",new MessageOption(),'button1','button2').then(function(data){
+        //     console.log(data);
+
+        // });
         //commands.executeCommand('catCoding.start');
     });
     // 注册依赖包管理器
@@ -78,18 +96,18 @@ export function activate(context: ExtensionContext) {
     commands.registerCommand('nodeDependencies.addEntry', () => window.showInformationMessage(`Successfully called add entry.`));
     commands.registerCommand('nodeDependencies.editEntry', (node: Dependency) => window.showInformationMessage(`Successfully called edit entry on ${node.label}.`));
     commands.registerCommand('nodeDependencies.deleteEntry', (node: Dependency) => window.showInformationMessage(`Successfully called delete entry on ${node.label}.`));
-    
+
     const jsonOutlineProvider = new JsonOutlineProvider(context);
-	window.registerTreeDataProvider('jsonOutline', jsonOutlineProvider);
-	commands.registerCommand('jsonOutline.refresh', () => jsonOutlineProvider.refresh());
-	commands.registerCommand('jsonOutline.refreshNode', offset => jsonOutlineProvider.refresh(offset));
-	commands.registerCommand('jsonOutline.renameNode', offset => jsonOutlineProvider.rename(offset));
+    window.registerTreeDataProvider('jsonOutline', jsonOutlineProvider);
+    commands.registerCommand('jsonOutline.refresh', () => jsonOutlineProvider.refresh());
+    commands.registerCommand('jsonOutline.refreshNode', offset => jsonOutlineProvider.refresh(offset));
+    commands.registerCommand('jsonOutline.renameNode', offset => jsonOutlineProvider.rename(offset));
     commands.registerCommand('extension.openJsonSelection', range => jsonOutlineProvider.select(range));
-    
-    	// Samples of `window.createView`
-	new FtpExplorer(context);
-	new FileExplorer(context);
-    
+
+    // Samples of `window.createView`
+    new FtpExplorer(context);
+    new FileExplorer(context);
+
     // 只创建一个视图
     let currentPanel: WebviewPanel | undefined = undefined;
 
@@ -149,9 +167,9 @@ export function activate(context: ExtensionContext) {
 // showInformationMessage 的参数类
 // 默认为false非模拟弹窗
 // 参数类型:boolean
-class MessageOption implements MessageOptions{
-    modal:boolean = false;
-    constructor(modal?:boolean){
+class MessageOption implements MessageOptions {
+    modal: boolean = false;
+    constructor(modal?: boolean) {
         this.modal = modal;
     }
 }

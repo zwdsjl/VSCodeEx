@@ -16,8 +16,8 @@
         "onWebviewPanel:catCoding",
         "onView:nodeDependencies",
         "onView:ftpExplorer",
-		"onView:jsonOutline",
-		"onView:fileExplorer"
+        "onView:jsonOutline",
+        "onView:fileExplorer"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -223,7 +223,72 @@
                     "group": "inline"
                 }
             ]
-        }
+        },
+        "configuration": [
+            {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$id": "http://example.com/product.schema.json",
+                "type": "object",
+                "title": "Aming",
+                "properties": {
+                    "typescript.useCodeSnippetsOnmethodSuggest": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Complete functions with their parameter"
+                    },
+                    "typescript.tasks": {
+                        "type": "number",
+                        "default": 1,
+                        "enum": [
+                            1,
+                            2,
+                            3,
+                            4,
+                            5
+                        ],
+                        "description": "Specifies the folder path"
+                    },
+                    "typescript.testuri": {
+                        "title": "Product",
+                        "description": "A product from Acme's Catalog",
+                        "type": "object",
+                        "properties": {
+                            "productId": {
+                                "description": "The unique identifier for a product",
+                                "type": "integer"
+                            },
+                            "productName": {
+                                "description": "Name of the product",
+                                "type": "string"
+                            },
+                            "price": {
+                                "description": "The price of the product",
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                            },
+                            "tags": {
+                                "description": "Tags for the product",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "minItems": 1,
+                                "uniqueItems": true
+                            },
+                            "warehouseLocation": {
+                                "description": "Coordinates of the warehouse where the product is located.",
+                                "$ref": "https://example.com/geographical-location.schema.json"
+                            }
+                        },
+                        "required": [
+                            "productId",
+                            "productName",
+                            "price"
+                        ]
+                    }
+                }
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
