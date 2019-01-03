@@ -2,11 +2,12 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as path from 'path';
-import { commands, Disposable, ExtensionContext, MessageOptions, StatusBarAlignment, StatusBarItem, tasks, TextDocument, Uri, ViewColumn, WebviewPanel, WebviewPanelSerializer, window, workspace } from 'vscode';
+import { commands, Disposable, ExtensionContext, MessageOptions, StatusBarAlignment, StatusBarItem, tasks, TextDocument, Uri, ViewColumn, WebviewPanel, WebviewPanelSerializer, window, workspace, Task } from 'vscode';
 import { FileExplorer } from './fileExplorer';
 import { FtpExplorer } from './ftpExplorer';
 import { JsonOutlineProvider } from './jsonOutline';
 import { Dependency, DepNodeProvider } from './nodeDependencies';
+import {TasksManeger} from './tasksManeger'
 import { textFunctions } from './textTools';
 const cats = {
     'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
@@ -17,6 +18,10 @@ const cats = {
 // 由package.json中定义的激活事件控制
 export function activate(context: ExtensionContext) {
 
+    const tasksManeger = new TasksManeger();
+    window.registerTreeDataProvider('tasksManeger',tasksManeger);
+    commands.registerCommand('tasksManeger.refresh', () => tasksManeger.refresh());
+    commands.registerCommand('tasksManeger.runTask',(task:Task)=>tasksManeger.runTask(task));
     // commands.executeCommand('workbench.action.tasks.runTask');
 
 

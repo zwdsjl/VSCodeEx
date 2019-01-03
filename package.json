@@ -33,6 +33,10 @@
         "views": {
             "package-explorer": [
                 {
+                    "id": "tasksManeger",
+                    "name": "任务管理"
+                },
+                {
                     "id": "nodeDependencies",
                     "name": "Node依赖"
                 },
@@ -52,6 +56,22 @@
             ]
         },
         "commands": [
+            {
+                "command": "tasksManeger.refresh",
+                "title": "Refresh",
+                "icon": {
+                    "light": "resources/light/refresh.svg",
+                    "dark": "resources/dark/refresh.svg"
+                }
+            },
+            {
+                "command": "tasksManeger.runTask",
+                "title": "run",
+                "icon": {
+                    "light": "resources/light/run.svg",
+                    "dark": "resources/dark/run.svg"
+                }
+            },
             {
                 "command": "HelloWorld",
                 "title": "say Hello!"
@@ -179,6 +199,11 @@
             ],
             "view/title": [
                 {
+                    "command": "tasksManeger.refresh",
+                    "when": "view == tasksManeger",
+                    "group": "navigation"
+                },
+                {
                     "command": "nodeDependencies.refreshEntry",
                     "when": "view == nodeDependencies",
                     "group": "navigation"
@@ -202,6 +227,11 @@
                 {
                     "command": "nodeDependencies.editEntry",
                     "when": "view == nodeDependencies && viewItem == dependency",
+                    "group": "inline"
+                },
+                {
+                    "command": "tasksManeger.runTask",
+                    "when": "view == tasksManeger",
                     "group": "inline"
                 },
                 {
